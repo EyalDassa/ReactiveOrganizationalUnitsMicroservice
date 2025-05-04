@@ -71,7 +71,23 @@ class UnitsController (
         produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun findEmployeesOfUnit(@PathVariable unitId: String,
                             @RequestParam(name = "page", required = false ,defaultValue = "0") page: Int,
-                            @RequestParam(name = "size", required = false ,defaultValue = "10") size: Int): Flux<UnitBoundary> {
+                            @RequestParam(name = "size", required = false ,defaultValue = "10") size: Int): Flux<UnitEmployeeBoundary> {
         return this.unitsService.findEmployeesOfUnit(unitId, page, size)
     }
+
+    @GetMapping(
+            path = ["/{email}/units"],
+            produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun findUnitsOfEmployee(@PathVariable email: String,
+                            @RequestParam(name = "page", required = false ,defaultValue = "0") page: Int,
+                            @RequestParam(name = "size", required = false ,defaultValue = "10") size: Int): Flux<UnitBoundary> {
+        return this.unitsService.findUnitsOfEmployee(email, page, size)
+    }
+
+    @DeleteMapping(
+        path = ["/{unitId}/users"])
+    fun unbindEmployee(@PathVariable unitId: String):Mono<Void>{
+        return this.unitsService.unBindEmployeesFromUnit(unitId)
+    }
+
 }

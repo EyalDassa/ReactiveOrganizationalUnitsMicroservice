@@ -22,7 +22,7 @@ class UnitsConverter {
             boundary.name,
             boundary.creationDate,
             boundary.description,
-            hashSetOf()
+//            hashSetOf()
         )
     }
 }

@@ -12,5 +12,7 @@ interface UnitsService {
     fun findAllById(page: Int, size: Int): Flux<UnitBoundary>
     fun updateUnit(unitId: String, unit: UnitBoundary): Mono<Void>
     fun bindEmployee(unitId: String, employeeBoundary: UnitEmployeeBoundary): Mono<Void>
-    fun findEmployeesOfUnit(unitId: String, page: Int, size: Int): Flux<UnitBoundary>
+    fun findEmployeesOfUnit(unitId: String, page: Int, size: Int): Flux<UnitEmployeeBoundary>
+    fun unBindEmployeesFromUnit(unitId: String): Mono<Void>
+    fun findUnitsOfEmployee(email: String, page: Int, size: Int): Flux<UnitBoundary>
 }

@@ -6,5 +6,6 @@ import reactor.core.publisher.Flux
 
 
 interface UnitsCrud: ReactiveMongoRepository<UnitEntity, String> {
-    fun findAllByIdNotNull(Pageable: Pageable): Flux<UnitEntity>
+    fun findAllByIdNotNull(pageable: Pageable): Flux<UnitEntity>
+    fun findById(id: String, pageable: Pageable): Flux<UnitEntity>
 }
