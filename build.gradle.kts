@@ -29,6 +29,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-ui
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
 
+    //email validation
+    implementation("commons-validator:commons-validator:1.9.0")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 

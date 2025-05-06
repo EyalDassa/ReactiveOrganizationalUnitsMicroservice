@@ -1,5 +1,6 @@
 package org.example.reactiveorganizationalunitsmicroservice.Service
 
+import org.apache.commons.validator.routines.EmailValidator
 import org.example.reactiveorganizationalunitsmicroservice.Boundary.UnitBoundary
 import org.example.reactiveorganizationalunitsmicroservice.Boundary.UnitEmployeeBoundary
 import org.example.reactiveorganizationalunitsmicroservice.Entity.UnitEmployeeCrud
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -23,12 +23,10 @@ class UnitsServiceImpl(
     val unitsCrud: UnitsCrud,
     val unitsEmployeeCrud: UnitEmployeeCrud,
     val converter: UnitsConverter,
-    val unitsEmployeeConverter: UnitsEmployeeConverter
+    val unitsEmployeeConverter: UnitsEmployeeConverter,
 ) : UnitsService{
 
     override fun create(unit: UnitBoundary): Mono<UnitBoundary> {
-        // TODO if null then ignore values
-
         unit.id = null
         val formatter = SimpleDateFormat("dd-MM-yyyy")
         unit.creationDate = formatter.format(Date())
@@ -53,7 +51,6 @@ class UnitsServiceImpl(
     override fun findById(unitId: String): Mono<UnitBoundary> {
         return this.unitsCrud
             .findById(unitId)
-//            .switchIfEmpty(Mono.empty())
             .log()
             .map { converter.toBoundary(it) }
             .log()
@@ -77,10 +74,10 @@ class UnitsServiceImpl(
             .switchIfEmpty(Mono.error{ UnitNotFoundException("Unit with ID $unitId was not found")})
             .log()
             .map{
-                it.description = unit.description
-                it.name = unit.name
+                if(unit.name != null) it.name = unit.name
+                if(unit.description != null) it.description = unit.description
                 it
-            }
+           }
             .flatMap { unitsCrud.save(it) }
             .log()
             .then()
@@ -93,7 +90,7 @@ class UnitsServiceImpl(
             .log()
             .zipWith(Mono.just(boundary)
                 .flatMap {
-                    if (it.email == null || it.email!!.trim().isEmpty()) {
+                    if (it.email == null || it.email!!.trim().isEmpty() || !EmailValidator.getInstance().isValid(it.email)) {
                         Mono.empty()
                     } else {
                         Mono.just(it)
@@ -124,20 +121,11 @@ class UnitsServiceImpl(
 
     override fun findUnitsOfEmployee(email: String, page: Int, size: Int): Flux<UnitBoundary> {
         return this.unitsEmployeeCrud
-            .findAllByEmail(email, PageRequest.of(
-                page,size, Sort.Direction.ASC,"unitId"))
-            .log()
-            .flatMap {
-                if (it.unitId != null){
-                this.unitsCrud
-                .findById(it.unitId!!, PageRequest.of(
-                    page,size,Sort.Direction.ASC,"unitId"))
-                    .map { converter.toBoundary(it) }
-                }
-                else
-                    Flux.empty()
+            .findAllByEmail(email, PageRequest.of(page, size, Sort.by("unitId")))
+            .concatMap {  // preserves ordering
+                this.unitsCrud.findById(it.unitId!!)
+                    .map(converter::toBoundary)
             }
-            .log()
     }
 
     override fun unBindEmployeesFromUnit(unitId: String): Mono<Void> {
@@ -146,6 +134,5 @@ class UnitsServiceImpl(
             .log()
             .then()
     }
-
 
 }
