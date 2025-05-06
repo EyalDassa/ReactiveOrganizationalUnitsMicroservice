@@ -59,6 +59,8 @@ class UnitsServiceImpl(
     override fun clean(): Mono<Void> {
         return this.unitsCrud.deleteAll()
             .log()
+            .then(this.unitsEmployeeCrud.deleteAll()
+                .log())
     }
 
     override fun findAllById(page: Int, size: Int): Flux<UnitBoundary> {
